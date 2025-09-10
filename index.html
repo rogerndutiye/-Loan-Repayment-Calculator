@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loan Repayment Calculator</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.2em;
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            box-sizing: border-box;
+            transition: border-color 0.3s ease;
+        }
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .calculate-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin: 20px 0;
+            transition: transform 0.2s ease;
+        }
+        .calculate-btn:hover {
+            transform: translateY(-2px);
+        }
+        .results {
+            margin-top: 30px;
+            display: none;
+        }
+        .summary-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 25px;
+            border-left: 5px solid #667eea;
+        }
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .summary-item:last-child {
+            border-bottom: none;
+        }
+        .summary-label {
+            font-weight: 600;
+            color: #555;
+        }
+        .summary-value {
+            font-weight: 700;
+            color: #333;
+            font-size: 1.1em;
+        }
+        .schedule-container {
+            margin-top: 30px;
+        }
+        .schedule-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        .schedule-table th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .schedule-table td {
+            padding: 12px 15px;
+            text-align: center;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .schedule-table tbody tr:hover {
+            background: #f8f9fa;
+        }
+        .payment-info {
+            background: #e3f2fd;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .payment-amount {
+            font-size: 2em;
+            font-weight: 700;
+            color: #1976d2;
+            margin: 10px 0;
+        }
+        .number {
+            text-align: right;
+        }
+        .payment-frequency-info {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .breakdown-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        @media (max-width: 768px) {
+            .breakdown-container {
+                grid-template-columns: 1fr;
+            }
+        }
+        .breakdown-item {
+            background: rgba(255, 255, 255, 0.7);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .breakdown-label {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+        .breakdown-value {
+            font-weight: 600;
+            font-size: 1.1em;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>💰 Loan Repayment Calculator</h1>
+        
+        <form id="loanForm">
+            <div class="input-group">
+                <label for="principal">Total Loan Principal Amount (RWF)</label>
+                <input type="number" id="principal" placeholder="e.g., 3000000" min="1" required>
+            </div>
+            
+            <div class="input-group">
+                <label for="months">Total Repayment Months</label>
+                <input type="number" id="months" placeholder="e.g., 12" min="1" max="360" required>
+            </div>
+
+            <div class="input-group">
+                <label for="interestRate">Monthly Interest Rate (%)</label>
+                <input type="number" id="interestRate" value="6.5" placeholder="e.g., 6.5" min="0" step="0.1" required>
+            </div>
+            
+            <button type="button" class="calculate-btn" onclick="calculateLoan()">
+                📊 Calculate Repayment Schedule
+            </button>
+        </form>
+        
+        <div class="results" id="results">
+            <div class="summary-card">
+                <h3 style="margin-top: 0; color: #333;">📋 Loan Summary</h3>
+                <div class="summary-item">
+                    <span class="summary-label">Principal Amount:</span>
+                    <span class="summary-value" id="summaryPrincipal">RWF 0</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Monthly Interest Rate:</span>
+                    <span class="summary-value" id="summaryInterestRate">0% per month</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Repayment Period:</span>
+                    <span class="summary-value" id="summaryMonths">0 months</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Total Interest:</span>
+                    <span class="summary-value" id="summaryInterest">RWF 0</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Total Payable:</span>
+                    <span class="summary-value" id="summaryTotal">RWF 0</span>
+                </div>
+            </div>
+
+            <div class="payment-frequency-info">
+                <strong>Payment Frequency: Daily</strong>
+            </div>
+            
+            <div class="payment-info">
+                <h3 style="margin-top: 0; color: #1976d2;">💳 Daily Payment</h3>
+                <div class="payment-amount" id="paymentAmount">RWF 0</div>
+                <div class="breakdown-container">
+                    <div class="breakdown-item">
+                        <div class="breakdown-label">Daily Interest</div>
+                        <div class="breakdown-value" id="paymentInterest">RWF 0</div>
+                    </div>
+                    <div class="breakdown-item">
+                        <div class="breakdown-label">Daily Principal</div>
+                        <div class="breakdown-value" id="paymentPrincipal">RWF 0</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="schedule-container">
+                <h3>📅 Daily Repayment Schedule</h3>
+                <div style="margin-bottom: 15px; color: #666; font-size: 0.9em;" id="scheduleNote">
+                    Note: Full repayment schedule. Each month = 30 days.
+                </div>
+                <table class="schedule-table">
+                    <thead>
+                        <tr>
+                            <th>Day</th>
+                            <th>Daily Payment</th>
+                            <th>Principal</th>
+                            <th>Interest</th>
+                            <th>Balance</th>
+                        </tr>
+                    </thead>
+                    <tbody id="scheduleBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function formatNumber(num) {
+            return 'RWF ' + new Intl.NumberFormat('en-RW', {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(Math.round(num));
+        }
+
+        function calculateLoan() {
+            const principal = parseFloat(document.getElementById('principal').value);
+            const months = parseInt(document.getElementById('months').value);
+            const monthlyInterestRate = parseFloat(document.getElementById('interestRate').value) / 100;
+            
+            if (!principal || !months || !monthlyInterestRate || principal <= 0 || months <= 0 || monthlyInterestRate < 0) {
+                alert('Please fill in all fields with valid values.');
+                return;
+            }
+
+            // Calculate totals
+            const totalInterest = principal * monthlyInterestRate * months;
+            const totalPayable = principal + totalInterest;
+            const totalDays = months * 30; // Each month = 30 days
+            const dailyInterest = totalInterest / totalDays;
+            const dailyPrincipal = principal / totalDays;
+            const dailyPayment = dailyInterest + dailyPrincipal;
+
+            // Update summary
+            document.getElementById('summaryPrincipal').textContent = formatNumber(principal);
+            document.getElementById('summaryInterestRate').textContent = (monthlyInterestRate * 100).toFixed(2) + '% per month';
+            document.getElementById('summaryMonths').textContent = months + ' months (' + totalDays + ' days)';
+            document.getElementById('summaryInterest').textContent = formatNumber(totalInterest);
+            document.getElementById('summaryTotal').textContent = formatNumber(totalPayable);
+
+            // Update payment info
+            document.getElementById('paymentAmount').textContent = formatNumber(dailyPayment);
+            document.getElementById('paymentInterest').textContent = formatNumber(dailyInterest);
+            document.getElementById('paymentPrincipal').textContent = formatNumber(dailyPrincipal);
+
+            // Generate daily schedule
+            const scheduleBody = document.getElementById('scheduleBody');
+            scheduleBody.innerHTML = '';
+            document.getElementById('scheduleNote').textContent = 'Full repayment schedule. Total repayment period: ' + totalDays + ' days.';
+            
+            let remainingBalance = principal;
+            
+            for (let day = 1; day <= totalDays; day++) {
+                const row = scheduleBody.insertRow();
+                
+                row.insertCell(0).textContent = day;
+                row.insertCell(1).textContent = formatNumber(dailyPayment);
+                row.insertCell(2).textContent = formatNumber(dailyPrincipal);
+                row.insertCell(3).textContent = formatNumber(dailyInterest);
+                
+                remainingBalance -= dailyPrincipal;
+                row.insertCell(4).textContent = formatNumber(Math.max(0, remainingBalance));
+                
+                // Add number class for right alignment
+                for (let i = 1; i < row.cells.length; i++) {
+                    row.cells[i].className = 'number';
+                }
+            }
+
+            // Show results
+            document.getElementById('results').style.display = 'block';
+            document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Wait for DOM to be fully loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Allow Enter key to calculate
+            document.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    calculateLoan();
+                }
+            });
+
+            // Real-time calculation on input change
+            function setupRealTimeCalculation() {
+                const inputs = ['principal', 'months', 'interestRate'];
+                inputs.forEach(id => {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        element.addEventListener('change', function() {
+                            if (document.getElementById('principal').value && 
+                                document.getElementById('months').value && 
+                                document.getElementById('interestRate').value) {
+                                calculateLoan();
+                            }
+                        });
+
+                        // Also add input event for real-time updates as user types
+                        element.addEventListener('input', function() {
+                            if (document.getElementById('principal').value && 
+                                document.getElementById('months').value && 
+                                document.getElementById('interestRate').value) {
+                                calculateLoan();
+                            }
+                        });
+                    }
+                });
+            }
+
+            setupRealTimeCalculation();
+        });
+    </script>
+</body>
+</html>
