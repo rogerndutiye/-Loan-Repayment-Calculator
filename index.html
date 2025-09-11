@@ -343,34 +343,6 @@
                     calculateLoan();
                 }
             });
-
-            // Real-time calculation on input change
-            function setupRealTimeCalculation() {
-                const inputs = ['principal', 'months', 'interestRate'];
-                inputs.forEach(id => {
-                    const element = document.getElementById(id);
-                    if (element) {
-                        element.addEventListener('change', function() {
-                            if (document.getElementById('principal').value && 
-                                document.getElementById('months').value && 
-                                document.getElementById('interestRate').value) {
-                                calculateLoan();
-                            }
-                        });
-
-                        // Also add input event for real-time updates as user types
-                        element.addEventListener('input', function() {
-                            if (document.getElementById('principal').value && 
-                                document.getElementById('months').value && 
-                                document.getElementById('interestRate').value) {
-                                calculateLoan();
-                            }
-                        });
-                    }
-                });
-            }
-
-            setupRealTimeCalculation();
         });
     </script>
 </body>
